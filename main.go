@@ -6,8 +6,20 @@ go get github.com/spf13/cobra
 */
 package main
 
-import "go-meter/cmd"
+import (
+	"fmt"
+	"go-meter/cmd"
+)
+
+type inputArgs struct {
+	lineAge    [2]int
+	blockSize  string
+	totalSize  string
+	masterMask int
+	path       string
+}
 
 func main() {
 	cmd.Execute()
+	fmt.Println(cmd.Lineage)
 }
