@@ -9,17 +9,30 @@ package main
 import (
 	"fmt"
 	"go-meter/cmd"
+	"regexp"
 )
 
-type inputArgs struct {
-	lineAge    [2]int
-	blockSize  string
-	totalSize  string
-	masterMask int
-	path       string
+func checkSize(size string) bool {
+	// fmt.Println(size)
+	str := `^([0-9.]+)(K|M|G|T)(i?B)?$`
+	r := regexp.MustCompile(str)
+	matchsBool := r.MatchString(size)
+	return matchsBool
 }
 
 func main() {
 	cmd.Execute()
-	fmt.Println(cmd.Lineage)
+	fmt.Println(cmd.InputArgs)
+	if !checkSize(cmd.InputArgs.BlockSize) {
+		fmt.Println("Please input correct block size.")
+	}
+	if !checkSize(cmd.InputArgs.TotalSize) {
+		fmt.Println("Please input correct total size.")
+	}
+	if len(cmd.InputArgs.LineAge) > 2 {
+		fmt.Println("Please input correct lineAge.")
+	}
+	if cmd.InputArgs.MasterMask < 0 {
+		fmt.Println("Mastermask is not negative.")
+	}
 }

@@ -1,30 +1,26 @@
-/*
-
- */
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
-	// "github.com/spf13/viper"
 )
 
-var cfgFile string
+var InputArgs struct {
+	LineAge    []int
+	BlockSize  string
+	TotalSize  string
+	MasterMask int
+	Path       string
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "go-meter",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Tool of copy and compare",
+	Long:  `go-meter is a tool of copy and compare.`,
+	Args:  cobra.ExactArgs(1),
+	// Run: func(cmd *cobra.Command, args []string) {
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	// },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -34,40 +30,11 @@ func Execute() {
 }
 
 func init() {
-	// cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().IntSliceVarP(&InputArgs.LineAge, "lineage", "l", nil, "Start Lineage,End Lineage")
+	rootCmd.PersistentFlags().StringVarP(&InputArgs.TotalSize, "tsize", "t", "", "Total Size")
+	rootCmd.PersistentFlags().StringVarP(&InputArgs.BlockSize, "bsize", "b", "", "Block Size")
+	rootCmd.PersistentFlags().StringVarP(&InputArgs.Path, "path", "p", "", "Path")
+	rootCmd.PersistentFlags().IntVarP(&InputArgs.MasterMask, "mask", "m", 0, "Master Mask")
+	// rootCmd.MarkFlagRequired("lineage")
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.go-meter.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	fmt.Println("init")
 }
-
-// initConfig reads in config file and ENV variables if set.
-// func initConfig() {
-// 	if cfgFile != "" {
-// 		// Use config file from the flag.
-// 		viper.SetConfigFile(cfgFile)
-// 	} else {
-// 		// Find home directory.
-// 		home, err := os.UserHomeDir()
-// 		cobra.CheckErr(err)
-
-// 		// Search config in home directory with name ".go-meter" (without extension).
-// 		viper.AddConfigPath(home)
-// 		viper.SetConfigType("yaml")
-// 		viper.SetConfigName(".go-meter")
-// 	}
-
-// 	viper.AutomaticEnv() // read in environment variables that match
-
-// 	// If a config file is found, read it in.
-// 	if err := viper.ReadInConfig(); err == nil {
-// 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-// 	}
-// }
