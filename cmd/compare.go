@@ -15,8 +15,6 @@ var compareCmd = &cobra.Command{
 	// Aliases: []string{"cp"},
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("compareCmd")
-		fmt.Println("args", args)
-		fmt.Println(InputArgs)
 	},
 }
 
