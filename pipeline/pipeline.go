@@ -1,10 +1,10 @@
 package pipeline
 
 import (
+	"math"
 	"os"
 	"sync"
 	_ "time"
-	"math"
 )
 
 
@@ -69,7 +69,7 @@ func getBlock(rawDataSlice *[]*[]byte,chanData chan []byte,mtx *sync.Mutex,block
 }
 
 
-func WriteToFile(data []*[]byte, filePath string, fileSize int, blockSize int){
+func WriteEntireFile(data []*[]byte, filePath string, fileSize int, blockSize int){
 	mutexWrite := &sync.Mutex{}
 	mutexGetBlock := &sync.Mutex{}
 	wg := &sync.WaitGroup{}
