@@ -34,7 +34,4 @@ func main() {
 	if len(cmd.InputArgs.Lineage) > 2 {
 		fmt.Println("Please input correct Lineage.")
 	}
-	if cmd.InputArgs.MasterMask < 0 {
-		fmt.Println("Mastermask is not negative.")
-	}
 }
