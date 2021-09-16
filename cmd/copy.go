@@ -19,10 +19,9 @@ var copyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Start to write files...")
 		checkInputArgs()
-		// number := InputArgs.Lineage[1] - InputArgs.Lineage[0] + 1
+		number := InputArgs.Lineage[1] - InputArgs.Lineage[0] + 1
 		wg := &sync.WaitGroup{}
-		// wg.Add(int(number))
-		wg.Add(1)
+		wg.Add(int(number))
 
 		c := cron.New()
 		c.AddFunc("@every 1s", func() {
@@ -30,10 +29,7 @@ var copyCmd = &cobra.Command{
 		})
 		c.Start()
 
-		// for i := InputArgs.Lineage[0]; i <= InputArgs.Lineage[1]; i++ {
-		// 	go WF(i, wg)
-		// }
-		for i := uint(0); i <= 0; i++ {
+		for i := InputArgs.Lineage[0]; i <= InputArgs.Lineage[1]; i++ {
 			go WF(i, wg)
 		}
 

@@ -50,7 +50,7 @@ func (f *File) WriteFile(masterBlock *[]uint64, blockSize int) {
 		f.basicBlock.wg.Add(1)
 		// go f.basicBlock.writeBlock(ch, f.file)
 		f.basicBlock.generageBlock(ch, buf, masterBlock, blockSize, f.blockNum)
-		f.basicBlock.writeBlock(ch, f.file)
+		f.basicBlock.writeBlock(ch, f.file, blockSize)
 
 	}
 	f.basicBlock.wg.Wait()
