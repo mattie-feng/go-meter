@@ -4,8 +4,8 @@ import (
 	"go-meter/randnum"
 )
 
-const MasterBlockSize = 64
-const RandomTimes = 8
+const MasterBlockSize = 64 * 1024
+const RandomTimes = 8 * 1024
 
 func MasterBlockInit() *[]uint64 {
 	MasterBlock := make([]uint64,0)
