@@ -9,10 +9,10 @@ import (
 )
 
 var InputArgs struct {
-	Lineage    []int
+	Lineage    []uint
 	BlockSize  string
 	TotalSize  string
-	MasterMask int
+	MasterMask uint64
 	FilePath   string
 }
 
@@ -36,11 +36,11 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().IntSliceVarP(&InputArgs.Lineage, "lineage", "l", nil, "Start Lineage,End Lineage")
+	rootCmd.PersistentFlags().UintSliceVarP(&InputArgs.Lineage, "lineage", "l", nil, "Start Lineage,End Lineage")
 	rootCmd.PersistentFlags().StringVarP(&InputArgs.TotalSize, "tsize", "t", "", "Total Size")
 	rootCmd.PersistentFlags().StringVarP(&InputArgs.BlockSize, "bsize", "b", "", "Block Size")
 	rootCmd.PersistentFlags().StringVarP(&InputArgs.FilePath, "path", "p", "", "FilePath")
-	rootCmd.PersistentFlags().IntVarP(&InputArgs.MasterMask, "mask", "m", 0, "Master Mask")
+	rootCmd.PersistentFlags().Uint64VarP(&InputArgs.MasterMask, "mask", "m", 0, "Master Mask")
 
 	viper.BindPFlag("TotalSize", rootCmd.PersistentFlags().Lookup("tsize"))
 	viper.BindPFlag("BlockSize", rootCmd.PersistentFlags().Lookup("bsize"))
