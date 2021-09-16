@@ -1,18 +1,19 @@
-package performinfo
+package perform
 //package main
 import (
     //"reflect"
     "sync/atomic"
     "sync"
-    "time"
+	"time"
+ 	"fmt"
     "errors"
-    "github.com/shirou/gopsutil/cpu"
-    "github.com/shirou/gopsutil/mem"
-    //"github.com/shirou/gopsutil/disk"
+ 	//"github.com/shirou/gopsutil/cpu"
+ 	//"github.com/shirou/gopsutil/mem"
+ 	//"github.com/shirou/gopsutil/disk"
 )
 
 var(
-    ErrGetTimeFailed = errors.New("Get time failed!")
+	ErrGetTimeFailed = errors.New("Get time failed!")
 )
 
 type IOInfo struct{
@@ -35,12 +36,12 @@ func GetState()([]float64){
 
     sysInfo := make([]float64,2)
 
-    cpuPer, _ := cpu.Percent(time.Second, false)
-    sysInfo[0] = cpuPer[0]
+    ////cpuPer, _ := cpu.Percent(time.Second, false)
+    ////sysInfo[0] = cpuPer[0]
     //fmt.Println(c)
-    memInfo,_ := mem.VirtualMemory()
+    ////memInfo,_ := mem.VirtualMemory()
     //fmt.Println(memInfo.UsedPercent)
-    sysInfo[1] = memInfo.UsedPercent
+    ////sysInfo[1] = memInfo.UsedPercent
    // parts,_ := disk.Partitions(true)
     //diskInfo,_ := disk.Usage(parts[0].Mountpoint)
     //fmt.Println(parts)
@@ -54,8 +55,6 @@ func GetState()([]float64){
 
 func IOStart(bs int64)error{
 
-    atomic.AddInt64(&ioinfo.sumIO,1)
-    atomic.AddInt64(&ioinfo.sumMB,bs)
     nowtimeS := time.Now().Unix()
     ioinfo.IOMutex.Lock()
     if nowtimeS != ioinfo.nowTime{
@@ -66,37 +65,35 @@ func IOStart(bs int64)error{
         atomic.StoreInt64(&ioinfo.sumMB,0)
     }
     ioinfo.IOMutex.Unlock()
+	return nil
+}
+
+
+func IOEnd(bs int64)error{
+
+    atomic.AddInt64(&ioinfo.sumIO,1)
+    atomic.AddInt64(&ioinfo.sumMB,bs)
+    //fmt.Println(reflect.TypeOf(nowtimeS))
+
     return nil
 }
 
-
-/*Get latest second IOPS. */
 func GetIOps()(int64){
-    nowtimeS := time.Now().Unix()
-    if nowtimeS - ioinfo.nowTime > 1{
-        return 0
-    }
     return ioinfo.iops
 }
 
-/*Get latest second MBPS. */
 func GetMBps()(int64){
-
-    nowtimeS := time.Now().Unix()
-    if nowtimeS - ioinfo.nowTime > 1{
-        return 0
-    }
-    mbps := ioinfo.mbps/(1024*1024)
-    return mbps
+    return ioinfo.mbps
 }
-/*func main() {
+func main() {
 
-    
+	
     IOStart(64)
     IOEnd(64)
+    GetIOps()
     fmt.Println(GetIOps())
 
-}*/
+}
 
 /*
  //For write function:提供给写 goroutine 的接口
