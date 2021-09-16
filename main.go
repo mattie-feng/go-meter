@@ -23,6 +23,7 @@ func checkSize(size string) bool {
 }
 
 func main() {
+
 	cmd.Execute()
 	fmt.Println("main:", cmd.InputArgs)
 	if !checkSize(cmd.InputArgs.BlockSize) {
