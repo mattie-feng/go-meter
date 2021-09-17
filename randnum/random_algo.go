@@ -3,13 +3,12 @@
 package randnum
 
 // 保存seed
-type randomState struct {
+type RandomState struct {
 	randomSeed interface{}
 }
 
-// 初始化Random state
-func RandomInit(randSeed uint64)(*randomState) {
-	randState := new(randomState)
+func RandomInit(randSeed uint64)(*RandomState) {
+	randState := new(RandomState)
 	randState.randomSeed = randSeed
 	return randState
 }
@@ -18,7 +17,7 @@ func RandomInit(randSeed uint64)(*randomState) {
 // lcgresult =  (randState.randomSeed.(uint64) * 25214903917 + 11) % (1 << 48)
 // lcgresult的结果位数不定，所以对它取余
 // 最后返回的随机数是8位的，例如：61806731
-func LCGRandom(randState *randomState)(uint64) {
+func LCGRandom(randState *RandomState)(uint64) {
 
 	// 随机算法
 	lcgRand := (randState.randomSeed.(uint64) * 25214903917 + 11) % (1 << 48)
@@ -31,6 +30,8 @@ func LCGRandom(randState *randomState)(uint64) {
 	for lcgResult < 10000000 {
 		lcgResult = lcgResult * 10
 	}
+
+	randState.randomSeed = lcgResult
 
 	return lcgResult
 }
