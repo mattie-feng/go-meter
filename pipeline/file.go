@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"bytes"
+	"go-meter/randnum"
 	"log"
 	"math"
 	"os"
@@ -20,7 +21,8 @@ func NewFile(filePath string, fileSize int, masterMask, fileMask uint64) *File {
 	if err != nil {
 		log.Fatal(err)
 	}
-	basicBlock := BasicBlockInit(masterMask, fileMask)
+	randumState := randnum.RandomInit(fileMask)
+	basicBlock := BasicBlockInit(masterMask, fileMask, randumState)
 	blockNum := getBlockNum(fileSize)
 	return &File{
 		file,
@@ -49,7 +51,7 @@ func (f *File) WriteFile(masterBlock *[]uint64, blockSize int) {
 	for i := 0; i < times; i++ {
 		f.basicBlock.wg.Add(1)
 		// go f.basicBlock.writeBlock(ch, f.file)
-		f.basicBlock.generageBlock(ch, buf, masterBlock, blockSize, f.blockNum)
+		f.basicBlock.generateBlock(ch, buf, masterBlock, blockSize, f.blockNum)
 		f.basicBlock.writeBlock(ch, f.file, blockSize)
 
 	}

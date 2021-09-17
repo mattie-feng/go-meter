@@ -2,16 +2,7 @@ package pipeline
 
 import (
 	"encoding/binary"
-	"go-meter/randnum"
 )
-
-// 使用 random package 进行随机数的生成
-func Random(mask uint64) uint64 {
-	randomState := randnum.RandomInit(mask)
-	num := randnum.LCGRandom(randomState)
-	return num
-}
-
 
 // 对两个数据进行XOR操作
 func XOR(A uint64, B uint64) uint64{
@@ -27,13 +18,10 @@ func UTB(dataUint uint64) []byte{
 }
 
 
-
-func ByteBlock(masterBlock *[]uint64, masterMask,fileMask,blockMask uint64) *[]byte{
-	masterSeed := Random(masterMask)
-	fileSeed := Random(fileMask)
+func XORBlock(masterBlock *[]uint64, masterSeed,fileSeed,blockSeed uint64) *[]byte{
 	block := make([]byte, 0, 8*1024)
 	for _,i := range(*masterBlock) {
-		section := UTB(XOR(XOR(XOR(i,masterSeed),fileSeed),blockMask))
+		section := UTB(XOR(XOR(XOR(i,masterSeed),fileSeed),blockSeed))
 		block = append(block, section...)
 	}
 	return &block

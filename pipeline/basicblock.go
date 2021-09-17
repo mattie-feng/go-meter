@@ -3,51 +3,51 @@ package pipeline
 import (
 	"bytes"
 	"go-meter/performinfo"
+	"go-meter/randnum"
 	"log"
 	"os"
 	"sync"
 )
 
 type basicBlock struct {
-	mutexWriteBlock    *sync.Mutex
+	mutexWriteBlock *sync.Mutex
 	mutexGenerageBlock *sync.Mutex
-	wg                 *sync.WaitGroup
-	index              int
-	masterMask         uint64
-	fileMask           uint64
-	blockMask          uint64
+	wg *sync.WaitGroup
+	index int
+	masterSeed uint64
+	fileSeed uint64
+	blockSeed uint64
+	randomStata *randnum.RandomState
 }
 
-func BasicBlockInit(masterMask, fileMask uint64) *basicBlock {
+func BasicBlockInit(masterSeed, fileSeed uint64, rs *randnum.RandomState) *basicBlock{
 	mutexWriteBlock := &sync.Mutex{}
 	mutexGenerateBlock := &sync.Mutex{}
 	wgWriteBlock := &sync.WaitGroup{}
-	blockMask := Random(fileMask)
-
+	blockSeed := randnum.LCGRandom(rs)
 	basicblock := &basicBlock{
 		mutexWriteBlock,
 		mutexGenerateBlock,
 		wgWriteBlock,
 		0,
-		masterMask,
-		fileMask,
-		blockMask,
+		masterSeed,
+		fileSeed,
+		blockSeed,
+		rs,
 	}
-
 	return basicblock
 }
 
 // 每次生成 64KB block（根据 master block 大小）
-func (b *basicBlock) generageBlock(ch chan *[]byte, buffer *bytes.Buffer, masterBlock *[]uint64, blockSize, blockNum int) {
+func (b *basicBlock)generateBlock(ch chan *[]byte, buffer *bytes.Buffer ,masterBlock *[]uint64, blockSize, blockNum int) {
 	b.mutexGenerageBlock.Lock()
 	defer b.mutexGenerageBlock.Unlock()
 
 	for buffer.Len() < blockSize {
 		if b.index < blockNum {
-			dataMaster := ByteBlock(masterBlock, b.masterMask, b.fileMask, b.blockMask)
-			buffer.Write(*dataMaster)
-			newBlockMask := Random(b.blockMask)
-			b.blockMask = newBlockMask // 生成之后更改BlockMask
+			data64K := XORBlock(masterBlock, b.masterSeed, b.fileSeed, b.blockSeed)
+			buffer.Write(*data64K)
+			b.blockSeed = randnum.LCGRandom(b.randomStata) // 更新为下一个BlockSeed
 			b.index++
 		} else {
 			data := buffer.Next(buffer.Len())
