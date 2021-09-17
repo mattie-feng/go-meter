@@ -87,6 +87,8 @@ func initConfig() {
 	// fmt.Println("Total Size:", viper.GetString("TotalSize"))
 
 }
+
+//Show performance with table style
 func printPerfor() {
 	table := uitable.New()
 	table.Separator = "\t\t"
@@ -123,6 +125,7 @@ func checkSize(size string, sizetype string) string {
 	return strconv.Itoa(finalSize)
 }
 
+//Check the format of input args and change the unit of size to byte
 func checkInputArgs() {
 	InputArgs.BlockSize = checkSize(InputArgs.BlockSize, "Block")
 	InputArgs.TotalSize = checkSize(InputArgs.TotalSize, "Total File")
@@ -132,6 +135,7 @@ func checkInputArgs() {
 	}
 }
 
+//Change float64 to '%' type string
 func changeFtoS(value float64) string {
 	result := strconv.FormatFloat(value, 'f', 2, 64)
 	return result + "%"
