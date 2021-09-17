@@ -5,11 +5,10 @@ import (
     "sync/atomic"
     "sync"
     "time"
-    "fmt"
     "errors"
     "github.com/shirou/gopsutil/cpu"
     "github.com/shirou/gopsutil/mem"
-    "github.com/shirou/gopsutil/disk"
+    //"github.com/shirou/gopsutil/disk"
 )
 
 var(
@@ -55,6 +54,8 @@ func GetState()([]float64){
 
 func IOStart(bs int64)error{
 
+    atomic.AddInt64(&ioinfo.sumIO,1)
+    atomic.AddInt64(&ioinfo.sumMB,bs)
     nowtimeS := time.Now().Unix()
     ioinfo.IOMutex.Lock()
     if nowtimeS != ioinfo.nowTime{
@@ -69,21 +70,24 @@ func IOStart(bs int64)error{
 }
 
 
-func IOEnd(bs int64)error{
-
-    atomic.AddInt64(&ioinfo.sumIO,1)
-    atomic.AddInt64(&ioinfo.sumMB,bs)
-    //fmt.Println(reflect.TypeOf(nowtimeS))
-
-    return nil
-}
-
+/*Get latest second IOPS. */
 func GetIOps()(int64){
+    nowtimeS := time.Now().Unix()
+    if nowtimeS - ioinfo.nowTime > 1{
+        return 0
+    }
     return ioinfo.iops
 }
 
+/*Get latest second MBPS. */
 func GetMBps()(int64){
-    return ioinfo.mbps
+
+    nowtimeS := time.Now().Unix()
+    if nowtimeS - ioinfo.nowTime > 1{
+        return 0
+    }
+    mbps := ioinfo.mbps/(1024*1024)
+    return mbps
 }
 /*func main() {
 

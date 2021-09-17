@@ -2,8 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"go-meter/performinfo"
 	"os"
+	"regexp"
+	"strconv"
+	"strings"
 
+	"github.com/gosuri/uitable"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -81,4 +86,53 @@ func initConfig() {
 
 	// fmt.Println("Total Size:", viper.GetString("TotalSize"))
 
+}
+func printPerfor() {
+	table := uitable.New()
+	table.Separator = "\t\t"
+	table.AddRow("IOPS", "MBPS", "CPU Utilization", "Memory Utilization")
+	table.AddRow(performinfo.GetIOps(), performinfo.GetMBps(), changeFtoS(performinfo.GetState()[0]), changeFtoS(performinfo.GetState()[1]))
+	// fmt.Println("IOPS:", performinfo.GetIOps())
+	// fmt.Println("MBPS:", performinfo.GetMBps())
+	// fmt.Println("CPU:", performinfo.GetState())
+	fmt.Println(table)
+	fmt.Println()
+}
+
+// Check the format of size
+func checkSize(size string, sizetype string) string {
+	strSize := strings.ToUpper(size)
+	str := `^([0-9.]+)(K|M|G|T)(?:I?B)?$`
+	r := regexp.MustCompile(str)
+	matchsResult := r.FindStringSubmatch(strSize)
+	if len(matchsResult) == 0 {
+		fmt.Println("Please input correct size of", sizetype)
+		os.Exit(1)
+	}
+	finalSize, _ := strconv.Atoi(matchsResult[1])
+	switch matchsResult[2] {
+	case "K":
+		finalSize = finalSize * 1024
+	case "M":
+		finalSize = finalSize * 1024 * 1024
+	case "G":
+		finalSize = finalSize * 1024 * 1024 * 1024
+	case "T":
+		finalSize = finalSize * 1024 * 1024 * 1024 * 1024
+	}
+	return strconv.Itoa(finalSize)
+}
+
+func checkInputArgs() {
+	InputArgs.BlockSize = checkSize(InputArgs.BlockSize, "Block")
+	InputArgs.TotalSize = checkSize(InputArgs.TotalSize, "Total File")
+	if len(InputArgs.Lineage) > 2 {
+		fmt.Println("Please input correct Lineage.")
+		os.Exit(1)
+	}
+}
+
+func changeFtoS(value float64) string {
+	result := strconv.FormatFloat(value, 'f', 2, 64)
+	return result + "%"
 }

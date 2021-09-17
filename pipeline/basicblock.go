@@ -2,23 +2,23 @@ package pipeline
 
 import (
 	"bytes"
+	"go-meter/performinfo"
 	"log"
 	"os"
 	"sync"
 )
 
-
 type basicBlock struct {
-	mutexWriteBlock *sync.Mutex
+	mutexWriteBlock    *sync.Mutex
 	mutexGenerageBlock *sync.Mutex
-	wg *sync.WaitGroup
-	index int
-	masterMask uint64
-	fileMask uint64
-	blockMask uint64
+	wg                 *sync.WaitGroup
+	index              int
+	masterMask         uint64
+	fileMask           uint64
+	blockMask          uint64
 }
 
-func BasicBlockInit(masterMask, fileMask uint64) *basicBlock{
+func BasicBlockInit(masterMask, fileMask uint64) *basicBlock {
 	mutexWriteBlock := &sync.Mutex{}
 	mutexGenerateBlock := &sync.Mutex{}
 	wgWriteBlock := &sync.WaitGroup{}
@@ -37,9 +37,8 @@ func BasicBlockInit(masterMask, fileMask uint64) *basicBlock{
 	return basicblock
 }
 
-
 // 每次生成 64KB block（根据 master block 大小）
-func (b *basicBlock)generageBlock(ch chan *[]byte, buffer *bytes.Buffer ,masterBlock *[]uint64, blockSize, blockNum int) {
+func (b *basicBlock) generageBlock(ch chan *[]byte, buffer *bytes.Buffer, masterBlock *[]uint64, blockSize, blockNum int) {
 	b.mutexGenerageBlock.Lock()
 	defer b.mutexGenerageBlock.Unlock()
 
@@ -62,13 +61,14 @@ func (b *basicBlock)generageBlock(ch chan *[]byte, buffer *bytes.Buffer ,masterB
 }
 
 // 单次写入(blocksize)
-func (b *basicBlock)writeBlock(ch chan *[]byte, file *os.File) {
+func (b *basicBlock) writeBlock(ch chan *[]byte, file *os.File, blockSize int) {
 	b.mutexWriteBlock.Lock()
 	defer b.mutexWriteBlock.Unlock()
 
-	block := <- ch
+	block := <-ch
+	performinfo.IOStart(int64(blockSize))
 	_, err := file.Write(*block)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 	b.wg.Done()
