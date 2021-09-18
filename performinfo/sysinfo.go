@@ -2,7 +2,6 @@ package performinfo
 //package main
 import (
     //"reflect"
-    "sync/atomic"
     "sync"
     "time"
     "errors"
@@ -54,22 +53,26 @@ func GetState()([]float64){
 
 func IOStart(bs int64)error{
 
-    atomic.AddInt64(&ioinfo.sumIO,1)
-    atomic.AddInt64(&ioinfo.sumMB,bs)
+    return nil
+}
+
+func IOEnd(bs int64)error{
+
     nowtimeS := time.Now().Unix()
     ioinfo.IOMutex.Lock()
+    ioinfo.sumIO = ioinfo.sumIO + 1
+    ioinfo.sumMB = ioinfo.sumMB + bs
+
     if nowtimeS != ioinfo.nowTime{
         ioinfo.nowTime = nowtimeS
         ioinfo.iops = ioinfo.sumIO
         ioinfo.mbps = ioinfo.sumMB
-        atomic.StoreInt64(&ioinfo.sumIO,0)
-        atomic.StoreInt64(&ioinfo.sumMB,0)
+        ioinfo.sumIO = 0
+        ioinfo.sumMB = 0
     }
     ioinfo.IOMutex.Unlock()
     return nil
 }
-
-
 /*Get latest second IOPS. */
 func GetIOps()(int64){
     nowtimeS := time.Now().Unix()
