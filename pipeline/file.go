@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"bytes"
 	"go-meter/randnum"
 	"log"
 	"math"
@@ -39,20 +38,18 @@ func getBlockNum(fileSize int) int {
 
 func (f *File) WriteFile(masterBlock *[]uint64, blockSize int) {
 	times := int(math.Ceil(float64(f.fileSize) / float64(blockSize))) // 向上取整
-	buf := &bytes.Buffer{}
+	buf := make([]byte,blockSize*2)
 	ch := make(chan *[]byte, 2)
 
-	// 生成数据
-	// for i := 0; i < times; i++ {
-	// 	go f.basicBlock.generageBlock(ch, buf, masterBlock, blockSize, f.blockNum)
-	// }
+	//生成数据
+	for i := 0; i < times; i++ {
+		go f.basicBlock.generateBlock(ch, &buf, masterBlock, blockSize, f.blockNum)
+	}
 
 	// 写入到文件
 	for i := 0; i < times; i++ {
 		f.basicBlock.wg.Add(1)
-		// go f.basicBlock.writeBlock(ch, f.file)
-		f.basicBlock.generateBlock(ch, buf, masterBlock, blockSize, f.blockNum)
-		f.basicBlock.writeBlock(ch, f.file, blockSize)
+		go f.basicBlock.writeBlock(ch, f.file, blockSize)
 
 	}
 	f.basicBlock.wg.Wait()

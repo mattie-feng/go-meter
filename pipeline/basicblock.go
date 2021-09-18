@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"bytes"
 	"go-meter/performinfo"
 	"go-meter/randnum"
 	"log"
@@ -38,24 +37,23 @@ func BasicBlockInit(masterSeed, fileSeed uint64, rs *randnum.RandomState) *basic
 	return basicblock
 }
 
-// 每次生成 64KB block（根据 master block 大小）
-func (b *basicBlock)generateBlock(ch chan *[]byte, buffer *bytes.Buffer ,masterBlock *[]uint64, blockSize, blockNum int) {
+// 每次生成64K数据，处理成block size大小
+func (b *basicBlock)generateBlock(ch chan *[]byte, buffer *[]byte ,masterBlock *[]uint64, blockSize, blockNum int) {
 	b.mutexGenerageBlock.Lock()
 	defer b.mutexGenerageBlock.Unlock()
-
-	for buffer.Len() < blockSize {
+	for len(*buffer) < blockSize {
 		if b.index < blockNum {
-			data64K := XORBlock(masterBlock, b.masterSeed, b.fileSeed, b.blockSeed)
-			buffer.Write(*data64K)
+			dataMaster := XORBlock(masterBlock, b.masterSeed, b.fileSeed, b.blockSeed)
+			*buffer = append(*buffer, *dataMaster...)
 			b.blockSeed = randnum.LCGRandom(b.randomStata) // 更新为下一个BlockSeed
 			b.index++
 		} else {
-			data := buffer.Next(buffer.Len())
-			ch <- &data
+			ch <- buffer
 			return
 		}
 	}
-	data := buffer.Next(blockSize)
+	data := (*buffer)[:blockSize]
+	*buffer = (*buffer)[blockSize:]
 	ch <- &data
 	return
 }
@@ -66,10 +64,10 @@ func (b *basicBlock) writeBlock(ch chan *[]byte, file *os.File, blockSize int) {
 	defer b.mutexWriteBlock.Unlock()
 
 	block := <-ch
-	performinfo.IOStart(int64(blockSize))
 	_, err := file.Write(*block)
 	if err != nil {
 		log.Fatal(err)
 	}
+	performinfo.IOEnd(int64(blockSize))
 	b.wg.Done()
 }
