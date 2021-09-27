@@ -29,8 +29,9 @@ var copyCmd = &cobra.Command{
 		})
 		c.Start()
 
+		masterBlock := pipeline.MasterBlockInit()
 		for i := InputArgs.Lineage[0]; i <= InputArgs.Lineage[1]; i++ {
-			go WF(i, wg)
+			go WriteFiles(i, masterBlock, wg)
 		}
 
 		wg.Wait()
@@ -41,8 +42,9 @@ var copyCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(copyCmd)
 }
-func WF(i uint, wg *sync.WaitGroup) {
-	masterBlock := pipeline.MasterBlockInit()
+
+//Write file with Lineage
+func WriteFiles(i uint, masterBlock *[]uint64, wg *sync.WaitGroup) {
 	fileMask := uint64(i)
 	fileSize, _ := strconv.Atoi(InputArgs.TotalSize)
 	blockSize, _ := strconv.Atoi(InputArgs.BlockSize)

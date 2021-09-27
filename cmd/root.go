@@ -87,6 +87,8 @@ func initConfig() {
 	// fmt.Println("Total Size:", viper.GetString("TotalSize"))
 
 }
+
+//Show performance with table style
 func printPerfor() {
 	table := uitable.New()
 	table.Separator = "\t\t"
@@ -123,15 +125,21 @@ func checkSize(size string, sizetype string) string {
 	return strconv.Itoa(finalSize)
 }
 
+//Check the format of input args and change the unit of size to byte
 func checkInputArgs() {
 	InputArgs.BlockSize = checkSize(InputArgs.BlockSize, "Block")
 	InputArgs.TotalSize = checkSize(InputArgs.TotalSize, "Total File")
-	if len(InputArgs.Lineage) > 2 {
-		fmt.Println("Please input correct Lineage.")
+	if len(InputArgs.Lineage) > 2 || len(InputArgs.Lineage) == 1 {
+		fmt.Println("Please input correct Start Lineage and End Lineage.")
+		os.Exit(1)
+	}
+	if InputArgs.Lineage[0] > InputArgs.Lineage[1] {
+		fmt.Println("Start Lineage cannot be greater than End Lineage.")
 		os.Exit(1)
 	}
 }
 
+//Change float64 to '%' type string
 func changeFtoS(value float64) string {
 	result := strconv.FormatFloat(value, 'f', 2, 64)
 	return result + "%"
