@@ -129,8 +129,12 @@ func checkSize(size string, sizetype string) string {
 func checkInputArgs() {
 	InputArgs.BlockSize = checkSize(InputArgs.BlockSize, "Block")
 	InputArgs.TotalSize = checkSize(InputArgs.TotalSize, "Total File")
-	if len(InputArgs.Lineage) > 2 {
-		fmt.Println("Please input correct Lineage.")
+	if len(InputArgs.Lineage) > 2 || len(InputArgs.Lineage) == 1 {
+		fmt.Println("Please input correct Start Lineage and End Lineage.")
+		os.Exit(1)
+	}
+	if InputArgs.Lineage[0] > InputArgs.Lineage[1] {
+		fmt.Println("Start Lineage cannot be greater than End Lineage.")
 		os.Exit(1)
 	}
 }
