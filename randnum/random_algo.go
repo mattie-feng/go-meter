@@ -2,14 +2,19 @@
 
 package randnum
 
-// 保存seed
-type RandomState struct {
-	randomSeed interface{}
+type RandomState interface{}
+
+// 保存上一次的Random number
+type myState struct {
+	randomSeed uint64
 }
 
 func RandomInit(randSeed uint64)(*RandomState) {
+	mState := new(myState)
+	mState.randomSeed = randSeed
+
 	randState := new(RandomState)
-	randState.randomSeed = randSeed
+	*randState = mState
 	return randState
 }
 
@@ -19,9 +24,11 @@ func RandomInit(randSeed uint64)(*RandomState) {
 // 最后返回的随机数是8位的，例如：61806731
 func LCGRandom(randState *RandomState)(uint64) {
 
+	rSeed := interface{}(*randState).(*myState).randomSeed
+	var lcgResult uint64 
 	// 随机算法
-	lcgRand := (randState.randomSeed.(uint64) * 25214903917 + 11) % (1 << 48)
-	lcgResult := lcgRand % 100000000
+	lcgRand := (rSeed * 25214903917 + 11) % (1 << 48)
+	lcgResult = lcgRand % 100000000
 	if lcgResult == 0 {
 		lcgResult = lcgRand / 1000000
 	}
@@ -31,7 +38,7 @@ func LCGRandom(randState *RandomState)(uint64) {
 		lcgResult = lcgResult * 10
 	}
 
-	randState.randomSeed = lcgResult
-
+	interface{}(*randState).(*myState).randomSeed = lcgResult
 	return lcgResult
+
 }
