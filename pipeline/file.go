@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -41,6 +42,8 @@ func getBlockNum(fileSize int) int {
 
 func (f *File) WriteFile(masterBlock *[]uint64, blockSize int) {
 	start := time.Now()
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	times := int(math.Ceil(float64(f.fileSize) / float64(blockSize))) // 向上取整
 	var bufCap int
 	if blockSize > 65536{
@@ -51,12 +54,21 @@ func (f *File) WriteFile(masterBlock *[]uint64, blockSize int) {
 	buf := NewBuf(bufCap)
 	ch := make(chan *[]byte, 2)
 
-	//生成数据
-	go f.basicBlock.generateBlock(ch, buf, masterBlock, blockSize, f.blockNum, times)
-	f.basicBlock.wg.Add(1)
-	go f.basicBlock.writeBlock(ch, f.file, blockSize, times)
+	// 生成数据
+	go func(){
+		for i:=0; i<times; i++{
+			f.basicBlock.generateBlock(ch, buf, masterBlock, blockSize, f.blockNum)
+		}
+	}()
+	// 写入数据
+	go func(){
+		for i:=0; i<times; i++{
+			f.basicBlock.writeBlock(ch, f.file, blockSize)
+		}
+		wg.Done()
+	}()
 
-	f.basicBlock.wg.Wait()
+	wg.Wait()
 	err := f.file.Close()
 	if err != nil {
 		log.Fatal(err)

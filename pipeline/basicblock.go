@@ -37,9 +37,8 @@ func (b *Buf) DeBuf(size int) []byte{
 
 
 type basicBlock struct {
-	mutexWriteBlock *sync.Mutex
-	mutexGenerageBlock *sync.Mutex
-	wg *sync.WaitGroup
+	//mutexWriteBlock *sync.Mutex
+	//mutexGenerageBlock *sync.Mutex
 	index int
 	masterSeed uint64
 	fileSeed uint64
@@ -48,14 +47,12 @@ type basicBlock struct {
 }
 
 func BasicBlockInit(masterSeed, fileSeed uint64, rs *randnum.RandomState) *basicBlock{
-	mutexWriteBlock := &sync.Mutex{}
-	mutexGenerateBlock := &sync.Mutex{}
-	wgWriteBlock := &sync.WaitGroup{}
+	//mutexWriteBlock := &sync.Mutex{}
+	//mutexGenerateBlock := &sync.Mutex{}
 	blockSeed := randnum.LCGRandom(rs)
 	basicblock := &basicBlock{
-		mutexWriteBlock,
-		mutexGenerateBlock,
-		wgWriteBlock,
+		//mutexWriteBlock,
+		//mutexGenerateBlock,
 		0,
 		masterSeed,
 		fileSeed,
@@ -66,34 +63,29 @@ func BasicBlockInit(masterSeed, fileSeed uint64, rs *randnum.RandomState) *basic
 }
 
 
-func (b *basicBlock)generateBlock(ch chan *[]byte, buf *Buf ,masterBlock *[]uint64, blockSize, blockNum,times int) {
-	for i := 0; i < times; i++ {
-		for len(buf.data) < blockSize {
-			if b.index < blockNum {
-				dataMaster := XORBlock(masterBlock, b.masterSeed, b.fileSeed, b.blockSeed)
-				buf.EnBuf(*dataMaster)
-				b.blockSeed = randnum.LCGRandom(b.randomStata) // 更新为下一个BlockSeed
-				b.index++
-			} else {
-				ch <- &buf.data
-				return
-			}
+func (b *basicBlock)generateBlock(ch chan *[]byte, buf *Buf ,masterBlock *[]uint64, blockSize, blockNum int) {
+	for len(buf.data) < blockSize {
+		if b.index < blockNum {
+			dataMaster := XORBlock(masterBlock, b.masterSeed, b.fileSeed, b.blockSeed)
+			buf.EnBuf(*dataMaster)
+			b.blockSeed = randnum.LCGRandom(b.randomStata) // 更新为下一个BlockSeed
+			b.index++
+		} else {
+			ch <- &buf.data
+			return
 		}
-		block := buf.DeBuf(blockSize)
-		ch <- &block
 	}
+	block := buf.DeBuf(blockSize)
+	ch <- &block
 }
 
 
-func (b *basicBlock) writeBlock(ch chan *[]byte, file *os.File, blockSize,times int) {
-	for i :=0; i < times; i++ {
-		block := <-ch
-		_, err := file.Write(*block)
-		if err != nil {
-			log.Fatal(err)
-		}
-		performinfo.IOEnd(int64(blockSize))
+func (b *basicBlock) writeBlock(ch chan *[]byte, file *os.File, blockSize int) {
+	block := <-ch
+	_, err := file.Write(*block)
+	if err != nil {
+		log.Fatal(err)
 	}
-	b.wg.Done()
+	performinfo.IOEnd(int64(blockSize))
 }
 
