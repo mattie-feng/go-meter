@@ -10,20 +10,20 @@ import (
 
 type Buf struct {
 	data []byte
-	mu sync.Mutex
+	mu   sync.Mutex
 }
 
-func NewBuf(cap int)(buf *Buf){
-	return &Buf{data: make([]byte,0,cap)}
+func NewBuf(cap int) (buf *Buf) {
+	return &Buf{data: make([]byte, 0, cap)}
 }
 
-func (b *Buf) EnBuf(v []byte){
+func (b *Buf) EnBuf(v []byte) {
 	b.mu.Lock()
 	b.data = append(b.data, v...)
 	b.mu.Unlock()
 }
 
-func (b *Buf) DeBuf(size int) []byte{
+func (b *Buf) DeBuf(size int) []byte {
 	b.mu.Lock()
 	if len(b.data) == 0 {
 		b.mu.Unlock()
@@ -35,35 +35,23 @@ func (b *Buf) DeBuf(size int) []byte{
 	return v
 }
 
-
 type basicBlock struct {
-	//mutexWriteBlock *sync.Mutex
-	//mutexGenerageBlock *sync.Mutex
-	index int
-	masterSeed uint64
-	fileSeed uint64
-	blockSeed uint64
+	index       int
+	blockSeed   uint64
 	randomStata *randnum.RandomState
 }
 
-func BasicBlockInit(masterSeed, fileSeed uint64, rs *randnum.RandomState) *basicBlock{
-	//mutexWriteBlock := &sync.Mutex{}
-	//mutexGenerateBlock := &sync.Mutex{}
+func BasicBlockInit(rs *randnum.RandomState) *basicBlock {
 	blockSeed := randnum.LCGRandom(rs)
 	basicblock := &basicBlock{
-		//mutexWriteBlock,
-		//mutexGenerateBlock,
 		0,
-		masterSeed,
-		fileSeed,
 		blockSeed,
 		rs,
 	}
 	return basicblock
 }
 
-
-func (b *basicBlock)generateBlock(ch chan *[]byte, buf *Buf ,masterBlock *[]uint64, blockSize, blockNum int) {
+func (b *basicBlock) generateBlock(ch chan *[]uint64, buf *Buf, block *[]uint64, blockSize, blockNum int) {
 	for len(buf.data) < blockSize {
 		if b.index < blockNum {
 			dataMaster := XORBlock(masterBlock, b.masterSeed, b.fileSeed, b.blockSeed)
@@ -79,13 +67,12 @@ func (b *basicBlock)generateBlock(ch chan *[]byte, buf *Buf ,masterBlock *[]uint
 	ch <- &block
 }
 
-
-func (b *basicBlock) writeBlock(ch chan *[]byte, file *os.File, blockSize int) {
+func (b *basicBlock) writeBlock(ch chan *[]uint64, file *os.File, blockSize int) {
 	block := <-ch
+	data := UTB(*block)
 	_, err := file.Write(*block)
 	if err != nil {
 		log.Fatal(err)
 	}
 	performinfo.IOEnd(int64(blockSize))
 }
-
